@@ -1,7 +1,11 @@
+import Message_Queue
+
+
 class REPL_controller:
     """A simple REPL interface for an interactive terminal"""
 
-    continue_loop = True
+    _continue_loop = True
+    _messages = Message_Queue.Message_Queue()
 
     def welcome_message(self):
         return "Hi there! (Ctrl+D quits)"
@@ -10,22 +14,22 @@ class REPL_controller:
         return ">> "
 
     def keep_reading(self):
-        return self.continue_loop
+        return self._continue_loop
 
     def read_line(self):
         try:
-            return raw_input(self.prompt_string())
+            self._messages.put(input(self.prompt_string()))
         except EOFError:
-            self.continue_loop = False
-            return ""
+            self._continue_loop = False
 
-    def generate_response(self, expression):
-        return expression
+    def generate_response(self):
+        return self._messages.get() if not self._messages.empty() else ""
 
     def main_loop(self):
-        print self.welcome_message()
+        print(self.welcome_message())
         while self.keep_reading():
-            print self.generate_response(self.read_line())
+            self.read_line()
+            print(self.generate_response())
 
 
 if __name__ == "__main__":
